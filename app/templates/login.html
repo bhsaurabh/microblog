@@ -1,0 +1,40 @@
+<!-- extends the base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+  <script type="text/javascript">
+    function set_openid(url, provider_name) {
+      u = url.search('<username>')
+      if (u != -1) {
+        // this openid needs a username
+        // prompt user for this
+        username = prompt('Enter your ' + provider_name + ' username:')
+        url = url.substr(0, u) + username
+      }
+      // set form elements
+      form = document.forms['login'];
+      form.elements['openid'].value = url
+    }
+  </script>
+
+  <h1>Sign In</h1>
+  <form action="" method="post" name="login">
+    <!-- hidden tag for CSRF -->
+    {{form.hidden_tag()}}
+    <p>
+      Please enter your OpenID, or select one of the providers below:<br>
+      {{form.openid(size=80)}}<br>
+      {% for error in form.errors.openid %}
+        <span style="color: red;">[{{error}}]</span>
+      {% endfor %}
+      <!-- OpenID provider list -->
+      {% for pr in providers %}
+      <a href="javascript:set_openid('{{pr.url}}', '{{pr.name}}')">{{pr.name}}</a>
+      {% endfor %}
+    </p>
+    <p>
+      {{form.remember_me}} Remember Me
+    </p>
+    <p><input type="submit" value="Sign In"></p>
+  </form>
+{% endblock %}
