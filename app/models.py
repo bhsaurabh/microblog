@@ -39,4 +39,4 @@ class Post(db.Model):
     Returns:
       A string representation of the post
     """
-    return '<Post %r'> % (self.body)
+    return '<Post %r>' % (self.body)
