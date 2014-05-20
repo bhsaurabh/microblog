@@ -22,6 +22,43 @@ class User(db.Model):
     """
     return '<User %r>' % (self.nickname)
 
+  # methods needed by flask.ext.login
+  def is_authenticated(self):
+    """
+    Is the user allowed to authenticate with the app?
+
+    Returns:
+      True, if user is allowed to authenticate with the app
+    """
+    return True
+
+  def is_active(self):
+    """
+    Is the user active/not blocked?
+
+    Returns:
+      True, if user is not banned
+    """
+    return True
+
+  def is_anonymous(self):
+    """
+    Is the user NOT allowed to login?
+
+    Returns:
+      False, if user is allowed to login
+    """
+    return False
+
+  def get_id(self):
+    """
+    Get the user's ID in unicode format
+
+    Returns:
+      user's id in unicode format
+    """
+    return unicode(self.id)
+
 
 class Post(db.Model):
   """

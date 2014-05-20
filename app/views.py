@@ -1,7 +1,8 @@
 # Handlers that respond to requests from browsers
 from flask import render_template, flash, redirect
-from app import app
+from app import app, db, lm, oid
 from forms import LoginForm
+from models import User, ROLE_USER, ROLE_ADMIN
 
 @app.route('/')
 @app.route('/index')
@@ -38,3 +39,17 @@ def login():
   # render the form page
   return render_template('login.html', title='Sign In', form=form,
           providers=app.config['OPENID_PROVIDERS'])
+
+
+@lm.user_loader
+def load_user(id):
+  """
+  Loads the user from the database
+
+  Args:
+    id: ID of required user (could be in unicode format)
+
+  Returns:
+    user: the user object
+  """
+  return User.query.get(int(id))
