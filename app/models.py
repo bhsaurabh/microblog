@@ -1,4 +1,5 @@
 from app import db
+from hashlib import md5
 
 ROLE_USER = 0
 ROLE_ADMIN = 1
@@ -21,6 +22,18 @@ class User(db.Model):
       A string representation of the user
     """
     return '<User %r>' % (self.nickname)
+
+  def avatar(self, size):
+    """
+    Returns a link to the Avatar of the user (uses Gravatar)
+
+    Args:
+      size: the size of the gravatar needed
+
+    Returns:
+      link: a link to the user's Gravatar avatar of required size
+    """
+    return 'http://www.gravatar.com/avatar/' + md5(self.email).hexdigest() + '?d=mm&s=' + str(size)
 
   # methods needed by flask.ext.login
   def is_authenticated(self):
