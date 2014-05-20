@@ -1,0 +1,53 @@
+#!flask/bin/python
+
+# Unit testing for the Flask app
+import os
+import unittest
+
+from config import basedir
+from app import app, db
+from app.models import User
+
+class TestCase(unittest.TestCase):
+  def setUp(self):
+    """
+    Runs before each test case
+    """
+    app.config['TESTING'] = True
+    app.config['CSRF_ENABLED'] = False
+    # Use a test database
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'test.db')
+    self.app = app.test_client()
+    db.create_all()
+
+  def tearDown(self):
+    """
+    Runs after each testcase
+    """
+    db.session.remove()
+    db.drop_all()
+
+  def test_avatar(self):
+    u = User(nickname = 'john', email = 'john@example.com')
+    avatar = u.avatar(128)
+    expected = 'http://www.gravatar.com/avatar/d4c74594d841139328695756648b6bd6'
+    assert avatar[0:len(expected)] == expected
+
+  def test_make_unique_nickname(self):
+    u = User(nickname = 'john', email = 'john@example.com')
+    db.session.add(u)
+    db.session.commit()
+    # test that john is not allowed as a unique name
+    nickname = User.make_unique_nickname('john')
+    assert nickname != 'john'
+    # test make unique nickname on a user
+    u = User(nickname = nickname, email = 'susan@example.com')
+    db.session.add(u)
+    db.session.commit()
+    nickname2 = User.make_unique_nickname('john')
+    assert nickname2 != 'john'
+    assert nickname2 != nickname
+
+# standard boilerplate
+if __name__ == '__main__':
+  unittest.main()

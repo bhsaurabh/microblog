@@ -72,7 +72,7 @@ def after_login(resp):
     resp: response from OpenID provider
   """
   if resp.email is None or resp.email == '':
-    flash('Invalid login. Please try again.')
+    flash('ERROR: Invalid login. Please try again.')
     return redirect(url_for('login'))
   user = User.query.filter_by(email=resp.email).first()
   if user is None:
@@ -131,7 +131,7 @@ def user(nickname):
   # verify if user exists
   user = User.query.filter_by(nickname=nickname).first()
   if user is None:
-    flash('User ' + nickname + ' not found!')
+    flash('ERROR: User ' + nickname + ' not found!')
     return redirect(url_for('index'))
   posts = [ # fake posts by user
         { 'author': user, 'body': 'Test post #1' },
@@ -151,7 +151,7 @@ def edit():
     g.user.about_me = form.about_me.data
     db.session.add(g.user)
     db.session.commit()
-    flash('Your changes have been saved.')
+    flash('SUCCESS: Your changes have been saved.')
     return redirect(url_for('edit'))
   else:
     # provide default values, else form will be very irritating

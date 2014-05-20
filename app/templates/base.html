@@ -21,7 +21,13 @@
       {% if messages %}
         <ul>
           {% for message in messages %}
-            <li>{{message}}</li>
+            {% if 'SUCCESS' in message %}
+            <span style="color: green;"><li>{{message}}</li></span>
+            {% elif 'ERROR' in message %}
+            <span style="color: red;"><li>{{message}}</li></span>
+            {% else %}
+            <span style="color: blue;"><li>{{message}}</li></span>
+            {% endif %}
           {% endfor %}
         </ul>
       {% endif %}
