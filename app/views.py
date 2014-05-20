@@ -11,7 +11,7 @@ def index():
   """
   Index page/Landing page for app
   """
-  user = {'nickname': 'Saurabh'}  # fake user
+  user = g.user
   posts = [ # fake array of posts
         {
             'author': { 'nickname': 'John' },
