@@ -155,4 +155,21 @@ def edit():
     # provide default values, else form will be very irritating
     form.nickname.data = g.user.nickname
     form.about_me.data = g.user.about_me
-  return render_template('form.html', title='Edit Profile', form=form)
+  return render_template('edit.html', title='Edit Profile', form=form)
+
+
+@app.errorhandler(404)
+def not_found_error(error):
+  """
+  404: Page not found
+  """
+  return render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def internal_error(error):
+  """
+  404: Internal error
+  """
+  db.session.rollback()
+  return render_template('500.html'), 500
