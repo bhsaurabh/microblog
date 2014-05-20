@@ -109,3 +109,23 @@ def logout():
   """
   logout_user()
   return redirect(url_for('index'))
+
+
+@app.route('/user/<nickname>')
+@login_required
+def user(nickname):
+  """
+  Profile page for a user
+
+  Args:
+    nickname: nickname of the user whose profile page is needed
+  """
+  # verify if user exists
+  user = User.query.filter_by(nickname=nickname).first()
+  if user is None:
+    flash('User ' + nickname + ' not found!')
+    return redirect(url_for('index'))
+  posts = [ # fake posts by user
+        { 'author': user, 'body': 'Test post #1' },
+        { 'author': user, 'body': 'Test post #2' }]
+  return render_template('user.html', user=user, posts=posts)
