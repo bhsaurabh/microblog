@@ -53,7 +53,7 @@ def login():
     # Query OpenID provider for user's nickname and email
     return oid.try_login(form.openid.data, ask_for=['nickname', 'email'])
   # render the form
-  render_template('login.html', title='Sign In', form=form,
+  return render_template('login.html', title='Sign In', form=form,
                   providers=app.config['OPENID_PROVIDERS'])
 
 
@@ -84,7 +84,7 @@ def after_login(resp):
   if 'remember_me' in session:
     remember_me = session['remember_me']
     session.pop('remember_me', False)
-  login_user(user, remember_me=remember_me)  # register this is a valid login
+  login_user(user, remember=remember_me)  # register this is a valid login
   return redirect(request.args.get('next') or url_for('index'))
 
 
@@ -100,3 +100,12 @@ def load_user(id):
     user: the user object
   """
   return User.query.get(int(id))
+
+
+@app.route('/logout')
+def logout():
+  """
+  Logs a user out of the microblog application
+  """
+  logout_user()
+  return redirect(url_for('index'))
