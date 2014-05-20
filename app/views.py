@@ -145,7 +145,7 @@ def edit():
   """
   Page to edit profile
   """
-  form = EditForm()
+  form = EditForm(g.user.nickname)
   if form.validate_on_submit():
     g.user.nickname = form.nickname.data
     g.user.about_me = form.about_me.data
