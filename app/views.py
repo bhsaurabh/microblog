@@ -82,6 +82,8 @@ def after_login(resp):
       # could not get nickname from OpenID provider
       # get a nickname from the email address
       nickname = resp.email.split('@')[0]
+    # make the nickname unique
+    nickname = User.make_unique_nickname(nickname)
     # create a new user and add to database
     user = User(nickname=nickname, email=resp.email, role=ROLE_USER)
     db.session.add(user)
