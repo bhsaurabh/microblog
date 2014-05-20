@@ -7,6 +7,7 @@ from models import User, ROLE_USER, ROLE_ADMIN
 
 @app.route('/')
 @app.route('/index')
+@login_required  # cannot view this page without signing in
 def index():
   """
   Index page/Landing page for app
