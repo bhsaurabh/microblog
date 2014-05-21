@@ -91,6 +91,15 @@ class User(db.Model):
     """
     return self.followed.filter(followers.c.followed_id == user.id).count() > 0
 
+  def followed_posts(self):
+    """
+    Use a single DB query to get posts followed by this user, sorted by time
+
+    Returns:
+      A list of all followed posts, sorted by time in descending order (recent 1st)
+    """
+    return Post.query.join(followers, (followers.c.followed_id == Post.user_id)).filter(followers.c.follower_id == self.id).order_by(Post.timestamp.desc())
+
   # methods needed by flask.ext.login
   def is_authenticated(self):
     """
