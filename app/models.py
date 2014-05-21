@@ -50,6 +50,47 @@ class User(db.Model):
     """
     return 'http://www.gravatar.com/avatar/' + md5(self.email).hexdigest() + '?d=mm&s=' + str(size)
 
+  # methods to deal with follow/unfollow
+  def follow(self, user):
+    """
+    Follow a user, if not following already
+
+    Args:
+      user: The user to follow
+
+    Returns:
+      A reference to itself, if the operation is successful
+    """
+    if not self.is_following(user):
+      self.followed.append(user)
+      return self  # a good way to check if follow operation is successful
+
+  def unfollow(self, user):
+    """
+    Unfollow a user, if following him
+
+    Args:
+      user: The user to unfollow
+
+    Returns:
+      A reference to itself, if the operation is successful
+    """
+    if self.is_following(user):
+      self.followed.remove(user)
+      return self
+
+  def is_following(self, user):
+    """
+    Checks if a user is being followed or not
+
+    Args:
+      user: The user to check, if being followed or not
+
+    Returns:
+      True, if the user is followed; False otherwise
+    """
+    return self.followed.filter(followers.c.followed_id == user.id).count() > 0
+
   # methods needed by flask.ext.login
   def is_authenticated(self):
     """
