@@ -165,6 +165,51 @@ def edit():
   return render_template('edit.html', title='Edit Profile', form=form)
 
 
+@app.route('/follow/<nickname>')
+@login_required
+def follow(nickname):
+  """
+  Follow a user
+  """
+  user = User.query.filter_by(nickname=nickname).first()
+  if user is None:
+    flash('ERROR: User ' + nickname + ' cannot be found.')
+    return redirect(url_for('index'))
+  if user == g.user:
+    flash('ERROR: You cannot follow yourself.')
+    return redirect(url_for('user', nickname=nickname))
+  u = g.user.follow(user)
+  if u is None:
+    flash('ERROR: You cannot follow: ' + nickname)
+    return redirect(url_for('user', nickname=nickname))
+  db.session.add(u)
+  db.session.commit()
+  flash('SUCCESS: You are now following: ' + nickname)
+  return redirect(url_for('user', nickname = nickname))
+
+
+@app.route('/unfollow/<nickname>')
+@login_required
+def unfollow(nickname):
+  """
+  Unfollow a user
+  """
+  user = User.query.filter_by(nickname=nickname).first()
+  if user is None:
+    flash('ERROR: User ' + nickname + ' cannot be found.')
+    return redirect(url_for('index'))
+  if user == g.user:
+    flash('ERROR: You cannot unfollow yourself.')
+    return redirect(url_for('user', nickname=nickname))
+  u = g.user.unfollow(user)
+  if u is None:
+    flash('ERROR: You cannot unfollow: ' + nickname)
+    return redirect(url_for('user', nickname=nickname))
+  db.session.add(u)
+  db.session.commit()
+  return redirect(url_for('user', nickname=nickname))
+
+
 @app.errorhandler(404)
 def not_found_error(error):
   """
