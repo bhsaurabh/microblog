@@ -6,7 +6,8 @@ import unittest
 
 from config import basedir
 from app import app, db
-from app.models import User
+from app.models import User, Post
+from datetime import datetime, timedelta
 
 class TestCase(unittest.TestCase):
   def setUp(self):
