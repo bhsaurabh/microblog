@@ -6,10 +6,9 @@ ROLE_ADMIN = 1
 
 # make a association table for many-many relation
 # between followers and followed
-followers = db.Table('followers'),
-            db.Column('follower_id', db.Integer, db.ForeignKey('user.id'),
+followers = db.Table('followers',
+            db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
             db.Column('followed_id', db.Integer, db.ForeignKey('user.id')))
-
 
 
 class User(db.Model):
