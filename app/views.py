@@ -88,6 +88,11 @@ def after_login(resp):
     user = User(nickname=nickname, email=resp.email, role=ROLE_USER)
     db.session.add(user)
     db.session.commit()
+    # make every new user follow himself
+    # so that a user's posts appear on his feed
+    user = user.follow(user)
+    db.session.add(user)
+    db.session.commit()
   remember_me = False
   if 'remember_me' in session:
     remember_me = session['remember_me']
