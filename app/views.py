@@ -3,11 +3,11 @@ from flask import render_template, flash, redirect, session, url_for, g, request
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db, lm, oid
 from forms import LoginForm, EditForm, PostForm
-from models import User, ROLE_USER, ROLE_ADMIN
+from models import User, ROLE_USER, ROLE_ADMIN, Post
 from datetime import datetime
 
-@app.route('/')
-@app.route('/index')
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/index', methods=['GET', 'POST'])
 @login_required  # cannot view this page without signing in
 def index():
   """
@@ -15,13 +15,15 @@ def index():
   """
   user = g.user
   form = PostForm()
+  posts = user.followed_posts().all()
   if form.validate_on_submit():
     post = Post(body=form.post.data, timestamp=datetime.utcnow(), author=user)
     db.session.add(post)
     db.session.commit()
     flash('SUCCESS: Your post is now live!')
     return redirect(url_for('index'))
-  return render_template('index.html', title='Home', user=user, posts=posts)
+  return render_template('index.html', title='Home', user=user, posts=posts,
+                    form=form)
 
 
 @app.before_request
@@ -136,7 +138,7 @@ def user(nickname):
   if user is None:
     flash('ERROR: User ' + nickname + ' not found!')
     return redirect(url_for('index'))
-  return render_template('user.html', user=user, posts=posts)
+  return render_template('user.html', user=user, posts=user.posts)
 
 
 @app.route('/edit', methods=['GET', 'POST'])
