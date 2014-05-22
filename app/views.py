@@ -2,7 +2,7 @@
 from flask import render_template, flash, redirect, session, url_for, g, request
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db, lm, oid
-from forms import LoginForm, EditForm
+from forms import LoginForm, EditForm, PostForm
 from models import User, ROLE_USER, ROLE_ADMIN
 from datetime import datetime
 
@@ -14,15 +14,13 @@ def index():
   Index page/Landing page for app
   """
   user = g.user
-  posts = [ # fake array of posts
-        {
-            'author': { 'nickname': 'John' },
-            'body': 'Beautiful day in Portland!'
-        },
-        {
-            'author': { 'nickname': 'Susan' },
-            'body': 'The Avengers movie was so cool!'
-        }]
+  form = PostForm()
+  if form.validate_on_submit():
+    post = Post(body=form.post.data, timestamp=datetime.utcnow(), author=user)
+    db.session.add(post)
+    db.session.commit()
+    flash('SUCCESS: Your post is now live!')
+    return redirect(url_for('index'))
   return render_template('index.html', title='Home', user=user, posts=posts)
 
 
@@ -138,9 +136,6 @@ def user(nickname):
   if user is None:
     flash('ERROR: User ' + nickname + ' not found!')
     return redirect(url_for('index'))
-  posts = [ # fake posts by user
-        { 'author': user, 'body': 'Test post #1' },
-        { 'author': user, 'body': 'Test post #2' }]
   return render_template('user.html', user=user, posts=posts)
 
 

@@ -47,4 +47,4 @@ class PostForm(Form):
   """
   Form for submitting new posts
   """
-  post = TextField(post, validators=[Required()])
+  post = TextField('post', validators=[Required()])
