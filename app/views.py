@@ -5,17 +5,19 @@ from app import app, db, lm, oid
 from forms import LoginForm, EditForm, PostForm
 from models import User, ROLE_USER, ROLE_ADMIN, Post
 from datetime import datetime
+from config import POSTS_PER_PAGE
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
+@app.route('/index/<int:page>', methods=['GET', 'POST'])
 @login_required  # cannot view this page without signing in
-def index():
+def index(page=1):
   """
   Index page/Landing page for app
   """
   user = g.user
   form = PostForm()
-  posts = user.followed_posts().all()
+  posts = user.followed_posts().paginate(page, POSTS_PER_PAGE, False)
   if form.validate_on_submit():
     post = Post(body=form.post.data, timestamp=datetime.utcnow(), author=user)
     db.session.add(post)
@@ -125,8 +127,9 @@ def logout():
 
 
 @app.route('/user/<nickname>')
+@app.route('/user/<nickname>/<int:page>')
 @login_required
-def user(nickname):
+def user(nickname, page=1):
   """
   Profile page for a user
 
@@ -138,7 +141,8 @@ def user(nickname):
   if user is None:
     flash('ERROR: User ' + nickname + ' not found!')
     return redirect(url_for('index'))
-  return render_template('user.html', user=user, posts=user.posts)
+  posts = user.posts.paginate(page, POSTS_PER_PAGE, False)
+  return render_template('user.html', user=user, posts=posts)
 
 
 @app.route('/edit', methods=['GET', 'POST'])
