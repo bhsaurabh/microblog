@@ -18,4 +18,7 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'app.db')
 SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 
 # pagination
-POSTS_PER_PAGE = 3
+POSTS_PER_PAGE = 10
+
+# full text search
+WHOOSH_BASE = os.path.join(basedir, 'search.db')

@@ -1,5 +1,6 @@
-from app import db
+from app import db, app
 from hashlib import md5
+import flask.ext.whooshalchemy as whooshalchemy
 
 ROLE_USER = 0
 ROLE_ADMIN = 1
@@ -164,6 +165,8 @@ class Post(db.Model):
   """
   Model for a Post in the microblog application
   """
+  __searchable__ = ['body']  # data that has to be indexed for full text search
+
   id = db.Column(db.Integer, primary_key=True)
   body = db.Column(db.String(140))
   timestamp = db.Column(db.DateTime)
@@ -177,3 +180,6 @@ class Post(db.Model):
       A string representation of the post
     """
     return '<Post %r>' % (self.body)
+
+
+whooshalchemy.whoosh_index(app, Post)  # initialise the full-text index
