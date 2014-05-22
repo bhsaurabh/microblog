@@ -48,3 +48,10 @@ class PostForm(Form):
   Form for submitting new posts
   """
   post = TextField('post', validators=[Required()])
+
+
+class SearchForm(Form):
+  """
+  Search bar on the top of every page
+  """
+  search = TextField('search', validators=[Required()])
