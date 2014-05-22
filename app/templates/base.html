@@ -9,6 +9,7 @@
   </head>
 
   <body>
+    <script src="/static/js/moment.min.js"></script>
     <div>Microblog: <a href="{{ url_for('index') }}">Home</a>
     <!-- Present logout link iff user is logged in -->
     {% if g.user.is_authenticated() %}
