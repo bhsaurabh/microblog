@@ -17,7 +17,10 @@
       </tr>
       <tr>
         <td>About yourself:</td>
-        <td>{{form.about_me(rows=4, cols=32)}}</td>
+        <td>{{form.about_me(rows=4, cols=32)}}
+        {% for error in form.errors.about_me %}
+        <br><span style="color: red;">[{{error}}]</span>
+        {% endfor %}</td>
       </tr>
       <tr>
         <td />

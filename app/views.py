@@ -2,28 +2,28 @@
 from flask import render_template, flash, redirect, session, url_for, g, request
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db, lm, oid
-from forms import LoginForm, EditForm
-from models import User, ROLE_USER, ROLE_ADMIN
+from forms import LoginForm, EditForm, PostForm
+from models import User, ROLE_USER, ROLE_ADMIN, Post
 from datetime import datetime
 
-@app.route('/')
-@app.route('/index')
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/index', methods=['GET', 'POST'])
 @login_required  # cannot view this page without signing in
 def index():
   """
   Index page/Landing page for app
   """
   user = g.user
-  posts = [ # fake array of posts
-        {
-            'author': { 'nickname': 'John' },
-            'body': 'Beautiful day in Portland!'
-        },
-        {
-            'author': { 'nickname': 'Susan' },
-            'body': 'The Avengers movie was so cool!'
-        }]
-  return render_template('index.html', title='Home', user=user, posts=posts)
+  form = PostForm()
+  posts = user.followed_posts().all()
+  if form.validate_on_submit():
+    post = Post(body=form.post.data, timestamp=datetime.utcnow(), author=user)
+    db.session.add(post)
+    db.session.commit()
+    flash('SUCCESS: Your post is now live!')
+    return redirect(url_for('index'))
+  return render_template('index.html', title='Home', user=user, posts=posts,
+                    form=form)
 
 
 @app.before_request
@@ -88,6 +88,11 @@ def after_login(resp):
     user = User(nickname=nickname, email=resp.email, role=ROLE_USER)
     db.session.add(user)
     db.session.commit()
+    # make every new user follow himself
+    # so that a user's posts appear on his feed
+    user = user.follow(user)
+    db.session.add(user)
+    db.session.commit()
   remember_me = False
   if 'remember_me' in session:
     remember_me = session['remember_me']
@@ -133,10 +138,7 @@ def user(nickname):
   if user is None:
     flash('ERROR: User ' + nickname + ' not found!')
     return redirect(url_for('index'))
-  posts = [ # fake posts by user
-        { 'author': user, 'body': 'Test post #1' },
-        { 'author': user, 'body': 'Test post #2' }]
-  return render_template('user.html', user=user, posts=posts)
+  return render_template('user.html', user=user, posts=user.posts)
 
 
 @app.route('/edit', methods=['GET', 'POST'])
@@ -158,6 +160,51 @@ def edit():
     form.nickname.data = g.user.nickname
     form.about_me.data = g.user.about_me
   return render_template('edit.html', title='Edit Profile', form=form)
+
+
+@app.route('/follow/<nickname>')
+@login_required
+def follow(nickname):
+  """
+  Follow a user
+  """
+  user = User.query.filter_by(nickname=nickname).first()
+  if user is None:
+    flash('ERROR: User ' + nickname + ' cannot be found.')
+    return redirect(url_for('index'))
+  if user == g.user:
+    flash('ERROR: You cannot follow yourself.')
+    return redirect(url_for('user', nickname=nickname))
+  u = g.user.follow(user)
+  if u is None:
+    flash('ERROR: You cannot follow: ' + nickname)
+    return redirect(url_for('user', nickname=nickname))
+  db.session.add(u)
+  db.session.commit()
+  flash('SUCCESS: You are now following: ' + nickname)
+  return redirect(url_for('user', nickname = nickname))
+
+
+@app.route('/unfollow/<nickname>')
+@login_required
+def unfollow(nickname):
+  """
+  Unfollow a user
+  """
+  user = User.query.filter_by(nickname=nickname).first()
+  if user is None:
+    flash('ERROR: User ' + nickname + ' cannot be found.')
+    return redirect(url_for('index'))
+  if user == g.user:
+    flash('ERROR: You cannot unfollow yourself.')
+    return redirect(url_for('user', nickname=nickname))
+  u = g.user.unfollow(user)
+  if u is None:
+    flash('ERROR: You cannot unfollow: ' + nickname)
+    return redirect(url_for('user', nickname=nickname))
+  db.session.add(u)
+  db.session.commit()
+  return redirect(url_for('user', nickname=nickname))
 
 
 @app.errorhandler(404)

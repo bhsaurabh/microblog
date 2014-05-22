@@ -4,6 +4,13 @@ from hashlib import md5
 ROLE_USER = 0
 ROLE_ADMIN = 1
 
+# make a association table for many-many relation
+# between followers and followed
+followers = db.Table('followers',
+            db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
+            db.Column('followed_id', db.Integer, db.ForeignKey('user.id')))
+
+
 class User(db.Model):
   """
   Model for a User in the microblog application
@@ -15,6 +22,12 @@ class User(db.Model):
   posts = db.relationship('Post', backref='author', lazy='dynamic')
   about_me = db.Column(db.String(140))
   last_seen = db.Column(db.DateTime)
+  followed = db.relationship('User',
+              secondary=followers,
+              primaryjoin=(followers.c.follower_id==id),
+              secondaryjoin=(followers.c.followed_id==id),
+              backref=db.backref('followers', lazy='dynamic'),
+              lazy='dynamic')
 
   def __repr__(self):
     """
@@ -36,6 +49,56 @@ class User(db.Model):
       link: a link to the user's Gravatar avatar of required size
     """
     return 'http://www.gravatar.com/avatar/' + md5(self.email).hexdigest() + '?d=mm&s=' + str(size)
+
+  # methods to deal with follow/unfollow
+  def follow(self, user):
+    """
+    Follow a user, if not following already
+
+    Args:
+      user: The user to follow
+
+    Returns:
+      A reference to itself, if the operation is successful
+    """
+    if not self.is_following(user):
+      self.followed.append(user)
+      return self  # a good way to check if follow operation is successful
+
+  def unfollow(self, user):
+    """
+    Unfollow a user, if following him
+
+    Args:
+      user: The user to unfollow
+
+    Returns:
+      A reference to itself, if the operation is successful
+    """
+    if self.is_following(user):
+      self.followed.remove(user)
+      return self
+
+  def is_following(self, user):
+    """
+    Checks if a user is being followed or not
+
+    Args:
+      user: The user to check, if being followed or not
+
+    Returns:
+      True, if the user is followed; False otherwise
+    """
+    return self.followed.filter(followers.c.followed_id == user.id).count() > 0
+
+  def followed_posts(self):
+    """
+    Use a single DB query to get posts followed by this user, sorted by time
+
+    Returns:
+      A list of all followed posts, sorted by time in descending order (recent 1st)
+    """
+    return Post.query.join(followers, (followers.c.followed_id == Post.user_id)).filter(followers.c.follower_id == self.id).order_by(Post.timestamp.desc())
 
   # methods needed by flask.ext.login
   def is_authenticated(self):
