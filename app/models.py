@@ -1,6 +1,7 @@
 from app import db, app
 from hashlib import md5
 import flask.ext.whooshalchemy as whooshalchemy
+from config import WHOOSH_ENABLED
 
 ROLE_USER = 0
 ROLE_ADMIN = 1
@@ -181,5 +182,6 @@ class Post(db.Model):
     """
     return '<Post %r>' % (self.body)
 
-
-whooshalchemy.whoosh_index(app, Post)  # initialise the full-text index
+if WHOOSH_ENABLED:
+    import flask.ext.whooshalchemy as whooshalchemy
+    whooshalchemy.whoosh_index(app, Post)

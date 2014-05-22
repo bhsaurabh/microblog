@@ -16,11 +16,13 @@
       <a href="{{ url_for('user', nickname=g.user.nickname)}}">Your profile</a>
       <a href="{{ url_for('logout') }}">Logout</a>
       <!-- Display search form iff user is logged in -->
+      {% if g.search_enabled %}
       <form style="display: inline;", action="{{url_for('search')}}" method="post" name="search">
         {{g.search_form.hidden_tag()}}
         {{g.search_form.search(size=20)}}
         <input type="submit" value="Search">
       </form>
+      {% endif %}
     {% endif %}
     </div>
     <hr>
