@@ -12,7 +12,7 @@
         <p>
           {{user.followers.count()}}
           {% if user.id == g.user.id %}
-            <a href="{{url_for('edit')}}">Edit</a>{% endif %}
+            <a href="{{url_for('edit')}}">Edit</a>
           {% elif not g.user.is_following(user) %}
             <a href="{{url_for('follow', nickname=user.nickname)}}">Follow</a>
           {% else %}
